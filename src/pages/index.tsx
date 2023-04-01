@@ -19,7 +19,7 @@ const CreatePostWizzard = () => {
 const Home: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
   const user = useUser();
-
+  console.log(user);
   const { data, isLoading } = api.posts.getAll.useQuery();
 
   if (isLoading) return <div>Loading...</div>;
@@ -41,7 +41,8 @@ const Home: NextPage = () => {
                 <SignInButton />
               </div>
             )}
-            {!!user.isSignedIn && <SignOutButton />}
+            {!!user.isSignedIn && <CreatePostWizzard />}
+            <SignOutButton />
           </div>
           <div className="flex flex-col">
             {data.map((post) => (
