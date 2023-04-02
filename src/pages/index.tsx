@@ -5,6 +5,7 @@ import { api, type RouterOutputs } from "~/utils/api";
 import daysjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
+import { LoadingPage } from "../components/loading";
 
 daysjs.extend(relativeTime);
 
@@ -58,15 +59,28 @@ const PostView = (props: PostWithAuthor) => {
   );
 };
 
-const Home: NextPage = () => {
-  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
-  const user = useUser();
-  console.log(user);
-  const { data, isLoading } = api.posts.getAll.useQuery();
+const Feed = () => {
+  const { data, isLoading: postsLoading } = api.posts.getAll.useQuery();
 
-  if (isLoading) return <div>Loading...</div>;
+  if (postsLoading) return <LoadingPage />;
 
   if (!data) return <div>Ups something went wrong...</div>;
+
+  return (
+    <div className="flex flex-col">
+      {data.map((post) => (
+        <PostView {...post} key={post.post.id} />
+      ))}
+    </div>
+  );
+};
+
+const Home: NextPage = () => {
+  const { isLoaded: userLoaded, isSignedIn } = useUser();
+
+  api.posts.getAll.useQuery();
+
+  if (!userLoaded) return <LoadingPage />;
 
   return (
     <>
@@ -78,19 +92,15 @@ const Home: NextPage = () => {
       <main className="flex h-screen justify-center ">
         <div className="h-full w-full border-x border-slate-400 md:max-w-2xl">
           <div className="flex border-b border-slate-400 p-4">
-            {!user.isSignedIn && (
+            {!isSignedIn && (
               <div className="flex justify-center">
                 <SignInButton />
               </div>
             )}
-            {user.isSignedIn && <CreatePostWizzard />}
+            {isSignedIn && <CreatePostWizzard />}
             <SignOutButton />
           </div>
-          <div className="flex flex-col">
-            {data.map((post) => (
-              <PostView {...post} key={post.post.id} />
-            ))}
-          </div>
+          <Feed />
         </div>
         <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up" />
       </main>
