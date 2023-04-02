@@ -4,13 +4,15 @@ import { api } from "~/utils/api";
 import { ClerkProvider } from "@clerk/nextjs";
 
 import "~/styles/globals.css";
+import { Toaster } from "react-hot-toast";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
-    return (
+  return (
     <ClerkProvider {...pageProps}>
+      <Toaster position="bottom-center" reverseOrder={false} />
       <Component {...pageProps} />
     </ClerkProvider>
-  )
+  );
 };
 
 export default api.withTRPC(MyApp);

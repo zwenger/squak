@@ -5,8 +5,9 @@ import { api, type RouterOutputs } from "~/utils/api";
 import daysjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
-import { LoadingPage } from "../components/loading";
+import { LoadingPage, LoadingSpinner } from "../components/loading";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 daysjs.extend(relativeTime);
 
@@ -20,6 +21,14 @@ const CreatePostWizzard = () => {
     onSuccess: () => {
       setInput("");
       void ctx.posts.invalidate();
+    },
+    onError: (e) => {
+      const errorMessage = e.data?.zodError?.fieldErrors.content;
+      if (errorMessage && errorMessage[0]) {
+        toast.error(errorMessage[0]);
+      } else {
+        toast.error("Something went wrong, try again later");
+      }
     },
   });
 
@@ -41,13 +50,29 @@ const CreatePostWizzard = () => {
         value={input}
         disabled={isPosting}
         onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (input !== "") {
+              mutate({ content: input });
+            }
+          }
+        }}
       />
-      <button
-        className="rounded-full bg-blue-500 p-2 text-white"
-        onClick={() => mutate({ content: input })}
-      >
-        Tweet
-      </button>
+      {input !== "" && !isPosting && (
+        <button
+          className="p-2 text-white"
+          onClick={() => mutate({ content: input })}
+          disabled={isPosting}
+        >
+          Squeak
+        </button>
+      )}
+      {isPosting && (
+        <div className="flex items-center justify-center">
+          <LoadingSpinner size={24} />
+        </div>
+      )}
     </div>
   );
 };
