@@ -6,11 +6,22 @@ import daysjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
 import { LoadingPage } from "../components/loading";
+import { useState } from "react";
 
 daysjs.extend(relativeTime);
 
 const CreatePostWizzard = () => {
   const { user } = useUser();
+  const [input, setInput] = useState("");
+
+  const ctx = api.useContext();
+
+  const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
+    onSuccess: () => {
+      setInput("");
+      void ctx.posts.invalidate();
+    },
+  });
 
   if (!user) return null;
 
@@ -26,7 +37,17 @@ const CreatePostWizzard = () => {
       <input
         placeholder="What emoji's on your mind?"
         className="grow bg-transparent outline-none"
+        type={"text"}
+        value={input}
+        disabled={isPosting}
+        onChange={(e) => setInput(e.target.value)}
       />
+      <button
+        className="rounded-full bg-blue-500 p-2 text-white"
+        onClick={() => mutate({ content: input })}
+      >
+        Tweet
+      </button>
     </div>
   );
 };
@@ -53,7 +74,7 @@ const PostView = (props: PostWithAuthor) => {
             ).fromNow()}`}</span>
           </div>
         </div>
-        <span>{post.content}</span>
+        <span className="text-2xl">{post.content}</span>
       </div>
     </div>
   );
