@@ -3,6 +3,24 @@ import Head from "next/head";
 import { api } from "../utils/api";
 import Image from "next/image";
 
+const ProfileFeed = (props: { userId: string }) => {
+  const { data, isLoading } = api.posts.getPostsById.useQuery({
+    userId: props.userId,
+  });
+
+  if (isLoading) return <LoadingPage />;
+
+  if (!data || data.length === 0) return <div>User has not posted...</div>;
+
+  return (
+    <div className="flex flex-col">
+      {data.map((fullpost) => (
+        <PostView key={fullpost.post.id} {...fullpost} />
+      ))}
+    </div>
+  );
+};
+
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
   const { data } = api.profile.getUserByUsername.useQuery({
     username,
@@ -22,7 +40,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
             alt="Profile image"
             width={128}
             height={128}
-            className="bg-sl absolute bottom-0 left-0 -mb-16 ml-4 rounded-full border-4 border-slate-600"
+            className="bg-sl absolute bottom-0 left-0 -mb-16 ml-4 rounded-full border-4 border-black bg-black"
           />
         </div>
         <div className="h-[64px]"></div>
@@ -30,6 +48,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
           data.username ?? ""
         }`}</div>
         <div className="w-full border-b border-slate-300"></div>
+        <ProfileFeed userId={data.id} />
       </PageLayout>
     </>
   );
@@ -37,6 +56,8 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
 
 import { generateSSGHelper } from "../server/helpers/ssgHelper";
 import { PageLayout } from "../components/layout";
+import { LoadingPage } from "../components/loading";
+import { PostView } from "../components/postView";
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const ssg = generateSSGHelper();
