@@ -6,12 +6,13 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { PageLayout } from "../components/layout";
 import { PostView } from "../components/postView";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const CreatePostWizzard = () => {
   const { user } = useUser();
   const [input, setInput] = useState("");
-
   const ctx = api.useContext();
+  const [parent] = useAutoAnimate();
 
   const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
     onSuccess: () => {
@@ -31,7 +32,7 @@ const CreatePostWizzard = () => {
   if (!user) return null;
 
   return (
-    <div className="flex w-full gap-4 ">
+    <div ref={parent} className="flex w-full gap-4 ">
       <UserButton
         appearance={{
           elements: {
@@ -60,7 +61,7 @@ const CreatePostWizzard = () => {
       />
       {input !== "" && !isPosting && (
         <button
-          className="p-2 text-white"
+          className="rounded-xl bg-blue-600 bg-opacity-25 p-4 text-white"
           onClick={() => mutate({ content: input })}
           disabled={isPosting}
         >
@@ -78,13 +79,14 @@ const CreatePostWizzard = () => {
 
 const Feed = () => {
   const { data, isLoading: postsLoading } = api.posts.getAll.useQuery();
+  const [parent] = useAutoAnimate();
 
   if (postsLoading) return <LoadingPage />;
 
   if (!data) return <div>Ups something went wrong...</div>;
 
   return (
-    <div className="flex flex-col">
+    <div ref={parent} className="flex flex-col">
       {data.map((post) => (
         <PostView {...post} key={post.post.id} />
       ))}
